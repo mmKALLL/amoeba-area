@@ -1,0 +1,111 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.turn {
+  font-size: 1rem;
+}
+
+.turn-red {
+  color: #c0392b;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.turn-blue {
+  color: #2c5fb8;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.reset {
+  padding: 4px 12px;
+  font-size: 0.9rem;
+  border: 1px solid #bbb;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reset:hover {
+  background: #eee;
+}
+
+.board {
+  background: #fafaf6;
+  border: 1px solid #ddd;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.grid-line {
+  stroke: #ccc;
+  stroke-width: 1;
+}
+
+.border-band {
+  fill-opacity: 0.18;
+  stroke: none;
+}
+
+.border-red {
+  fill: #c0392b;
+}
+
+.border-blue {
+  fill: #2c5fb8;
+}
+
+.hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.hit:hover {
+  fill: rgba(0, 0, 0, 0.06);
+}
+
+.peg-red {
+  fill: #c0392b;
+  stroke: #7a1f14;
+  stroke-width: 1;
+}
+
+.peg-blue {
+  fill: #2c5fb8;
+  stroke: #16386b;
+  stroke-width: 1;
+}
