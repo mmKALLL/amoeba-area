@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import Board from './Board'
 import Stats from './Stats'
-import { convexHull, polygonArea, polygonPerimeter, type Point } from './geometry'
+import GameOverBanner from './GameOverBanner'
+import { convexHull, pointInConvexHull, polygonArea, polygonPerimeter, type Point } from './geometry'
 import {
   BOARD_SIZE,
   buildInitialPegs,
@@ -15,6 +16,13 @@ import {
 
 const EPSILON = 1e-9
 
+const otherPlayer = (player: Player): Player => (player === 'red' ? 'blue' : 'red')
+
+const keyToPoint = (key: CoordKey): Point => {
+  const [rowStr, colStr] = key.split(',')
+  return { x: Number(colStr), y: Number(rowStr) }
+}
+
 const playerGridPoints = (
   pegs: Map<CoordKey, Player>,
   player: Player,
@@ -25,8 +33,7 @@ const playerGridPoints = (
   for (const [key, owner] of pegs) {
     if (owner !== player) continue
     if (excludeKey && key === excludeKey) continue
-    const [rowStr, colStr] = key.split(',')
-    points.push({ x: Number(colStr), y: Number(rowStr) })
+    points.push(keyToPoint(key))
   }
   if (extra) {
     points.push({ x: extra.col, y: extra.row })
@@ -50,17 +57,59 @@ const isValidDestination = (
   return Math.abs(polygonArea(hull) - currentArea) < EPSILON
 }
 
+const findCaptures = (
+  pegsAfterMove: Map<CoordKey, Player>,
+  mover: Player,
+  hullBefore: Point[],
+  hullAfter: Point[],
+): CoordKey[] => {
+  const opponent = otherPlayer(mover)
+  const captured: CoordKey[] = []
+  for (const [key, owner] of pegsAfterMove) {
+    if (owner !== opponent) continue
+    const p = keyToPoint(key)
+    if (!pointInConvexHull(p, hullBefore) && pointInConvexHull(p, hullAfter)) {
+      captured.push(key)
+    }
+  }
+  return captured
+}
+
+const playerLoses = (pegs: Map<CoordKey, Player>, player: Player, opponentHull: Point[]): boolean => {
+  const points = playerGridPoints(pegs, player)
+  const hull = convexHull(points)
+  if (polygonArea(hull) <= EPSILON) return true
+  if (points.length === 0) return true
+  for (const p of points) {
+    if (!pointInConvexHull(p, opponentHull)) return false
+  }
+  return true
+}
+
+const detectWinner = (pegs: Map<CoordKey, Player>, mover: Player): Player | null => {
+  const opponent = otherPlayer(mover)
+  const moverHull = convexHull(playerGridPoints(pegs, mover))
+  const opponentHull = convexHull(playerGridPoints(pegs, opponent))
+  const moverLost = playerLoses(pegs, mover, opponentHull)
+  const opponentLost = playerLoses(pegs, opponent, moverHull)
+  if (opponentLost) return mover
+  if (moverLost) return opponent
+  return null
+}
+
 export default function App() {
   const [pegs, setPegs] = useState<Map<CoordKey, Player>>(() => buildInitialPegs())
   const [currentPlayer, setCurrentPlayer] = useState<Player>('red')
   const [selectedKey, setSelectedKey] = useState<CoordKey | null>(null)
   const [hoverCoord, setHoverCoord] = useState<Coord | null>(null)
+  const [winner, setWinner] = useState<Player | null>(null)
 
   const redStats = computeStats(pegs, 'red')
   const blueStats = computeStats(pegs, 'blue')
   const currentArea = currentPlayer === 'red' ? redStats.area : blueStats.area
 
   const handleCellClick = (coord: Coord) => {
+    if (winner !== null) return
     const key = coordKey(coord)
     const owner = pegs.get(key)
 
@@ -76,16 +125,34 @@ export default function App() {
 
     if (!isValidDestination(pegs, currentPlayer, selectedKey, coord, currentArea)) return
 
-    const next = new Map(pegs)
-    next.delete(selectedKey)
-    next.set(key, currentPlayer)
-    setPegs(next)
-    setCurrentPlayer(currentPlayer === 'red' ? 'blue' : 'red')
+    const hullBefore = convexHull(playerGridPoints(pegs, currentPlayer))
+
+    const pegsAfterMove = new Map(pegs)
+    pegsAfterMove.delete(selectedKey)
+    pegsAfterMove.set(key, currentPlayer)
+
+    const hullAfter = convexHull(playerGridPoints(pegsAfterMove, currentPlayer))
+
+    const captured = findCaptures(pegsAfterMove, currentPlayer, hullBefore, hullAfter)
+    const pegsAfterCaptures = new Map(pegsAfterMove)
+    for (const capKey of captured) {
+      pegsAfterCaptures.delete(capKey)
+    }
+
+    const newWinner = detectWinner(pegsAfterCaptures, currentPlayer)
+
+    setPegs(pegsAfterCaptures)
+    setCurrentPlayer(otherPlayer(currentPlayer))
     setSelectedKey(null)
     setHoverCoord(null)
+    setWinner(newWinner)
   }
 
   const handleCellHover = (coord: Coord | null) => {
+    if (winner !== null) {
+      setHoverCoord(null)
+      return
+    }
     if (!selectedKey) {
       setHoverCoord(null)
       return
@@ -106,10 +173,11 @@ export default function App() {
     setCurrentPlayer('red')
     setSelectedKey(null)
     setHoverCoord(null)
+    setWinner(null)
   }
 
   const validDestinations: Coord[] = []
-  if (selectedKey) {
+  if (selectedKey && winner === null) {
     for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         const key = coordKey({ row, col })
@@ -124,7 +192,7 @@ export default function App() {
 
   let preview: { player: Player; area: number; perimeter: number } | null = null
   let previewHull: { player: Player; points: Point[]; valid: boolean } | null = null
-  if (selectedKey && hoverCoord) {
+  if (selectedKey && hoverCoord && winner === null) {
     const gridHull = convexHull(
       playerGridPoints(pegs, currentPlayer, selectedKey, hoverCoord),
     )
@@ -152,6 +220,7 @@ export default function App() {
           </button>
         </div>
       </header>
+      {winner !== null && <GameOverBanner winner={winner} onReset={reset} />}
       <Stats red={redStats} blue={blueStats} preview={preview} />
       <Board
         pegs={pegs}
@@ -161,6 +230,7 @@ export default function App() {
         onCellHover={handleCellHover}
         validDestinations={validDestinations}
         currentPlayer={currentPlayer}
+        disabled={winner !== null}
       />
     </main>
   )

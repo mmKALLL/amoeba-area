@@ -132,3 +132,20 @@ body {
 .valid-marker { pointer-events: none; }
 .valid-marker-red  { fill: #c0392b; fill-opacity: 0.85; }
 .valid-marker-blue { fill: #2c5fb8; fill-opacity: 0.85; }
+
+.game-over {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border: 2px solid;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.banner-name { text-transform: capitalize; }
+.banner-red  { color: #c0392b; border-color: #c0392b; background: #fdecea; }
+.banner-blue { color: #2c5fb8; border-color: #2c5fb8; background: #ebf1fc; }
+.board.disabled { filter: grayscale(0.4); cursor: not-allowed; }

@@ -25,6 +25,7 @@ type Props = {
   onCellHover?: (coord: Coord | null) => void
   validDestinations?: Coord[]
   currentPlayer?: Player
+  disabled?: boolean
 }
 
 const playerHullPoints = (pegs: Map<CoordKey, Player>, player: Player): Point[] => {
@@ -49,6 +50,7 @@ export default function Board({
   onCellHover,
   validDestinations,
   currentPlayer,
+  disabled,
 }: Props) {
   const indices = Array.from({ length: BOARD_SIZE }, (_, i) => i)
   const redHull = playerHullPoints(pegs, 'red')
@@ -64,7 +66,7 @@ export default function Board({
     <svg
       viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
       width="100%"
-      className="board"
+      className={disabled ? 'board disabled' : 'board'}
       role="img"
       aria-label="Amoeba Area board"
     >
@@ -120,9 +122,13 @@ export default function Board({
                 cy={intersectionY(row)}
                 r={CELL_SIZE / 2}
                 className="hit"
-                onClick={() => onCellClick({ row, col })}
-                onMouseEnter={onCellHover ? () => onCellHover({ row, col }) : undefined}
-                onMouseLeave={onCellHover ? () => onCellHover(null) : undefined}
+                onClick={disabled ? undefined : () => onCellClick({ row, col })}
+                onMouseEnter={
+                  disabled || !onCellHover ? undefined : () => onCellHover({ row, col })
+                }
+                onMouseLeave={
+                  disabled || !onCellHover ? undefined : () => onCellHover(null)
+                }
               />
               {player && (
                 <circle
