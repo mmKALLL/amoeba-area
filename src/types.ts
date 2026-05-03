@@ -8,6 +8,13 @@ export const coordKey = ({ row, col }: Coord): CoordKey => `${row},${col}`
 
 export const BOARD_SIZE = 24
 
+export const CELL_SIZE = 24
+export const PADDING = 24
+export const SVG_SIZE = PADDING * 2 + (BOARD_SIZE - 1) * CELL_SIZE
+
+export const intersectionX = (col: number): number => PADDING + col * CELL_SIZE
+export const intersectionY = (row: number): number => PADDING + row * CELL_SIZE
+
 export const INITIAL_LAYOUT: ReadonlyArray<{ row: number; col: number; player: Player }> = [
   { row: 5, col: 4, player: 'red' },
   { row: 5, col: 12, player: 'red' },

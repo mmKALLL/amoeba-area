@@ -1,17 +1,29 @@
 import { convexHull, type Point } from './geometry'
-import { BOARD_SIZE, coordKey, type Coord, type CoordKey, type Player } from './types'
+import {
+  BOARD_SIZE,
+  CELL_SIZE,
+  SVG_SIZE,
+  coordKey,
+  intersectionX,
+  intersectionY,
+  type Coord,
+  type CoordKey,
+  type Player,
+} from './types'
 
-const CELL_SIZE = 24
-const PADDING = 24
-const SVG_SIZE = PADDING * 2 + (BOARD_SIZE - 1) * CELL_SIZE
+type PreviewHull = {
+  player: Player
+  points: Point[]
+  valid: boolean
+} | null
 
 type Props = {
   pegs: Map<CoordKey, Player>
   onCellClick: (coord: Coord) => void
+  selectedKey?: CoordKey | null
+  previewHull?: PreviewHull
+  onCellHover?: (coord: Coord | null) => void
 }
-
-const intersectionX = (col: number) => PADDING + col * CELL_SIZE
-const intersectionY = (row: number) => PADDING + row * CELL_SIZE
 
 const playerHullPoints = (pegs: Map<CoordKey, Player>, player: Player): Point[] => {
   const points: Point[] = []
@@ -27,10 +39,22 @@ const playerHullPoints = (pegs: Map<CoordKey, Player>, player: Player): Point[] 
 
 const pointsAttr = (hull: Point[]): string => hull.map((p) => `${p.x},${p.y}`).join(' ')
 
-export default function Board({ pegs, onCellClick }: Props) {
+export default function Board({
+  pegs,
+  onCellClick,
+  selectedKey,
+  previewHull,
+  onCellHover,
+}: Props) {
   const indices = Array.from({ length: BOARD_SIZE }, (_, i) => i)
   const redHull = playerHullPoints(pegs, 'red')
   const blueHull = playerHullPoints(pegs, 'blue')
+
+  const previewClass = previewHull
+    ? previewHull.valid
+      ? `hull-preview hull-preview-valid hull-preview-${previewHull.player}`
+      : 'hull-preview hull-preview-invalid'
+    : ''
 
   return (
     <svg
@@ -66,9 +90,14 @@ export default function Board({ pegs, onCellClick }: Props) {
         />
       ))}
 
+      {previewHull && previewHull.points.length >= 3 && (
+        <polygon points={pointsAttr(previewHull.points)} className={previewClass} />
+      )}
+
       {indices.map((row) =>
         indices.map((col) => {
-          const player = pegs.get(coordKey({ row, col }))
+          const key = coordKey({ row, col })
+          const player = pegs.get(key)
           return (
             <g key={`cell-${row}-${col}`}>
               <circle
@@ -77,6 +106,8 @@ export default function Board({ pegs, onCellClick }: Props) {
                 r={CELL_SIZE / 2}
                 className="hit"
                 onClick={() => onCellClick({ row, col })}
+                onMouseEnter={onCellHover ? () => onCellHover({ row, col }) : undefined}
+                onMouseLeave={onCellHover ? () => onCellHover(null) : undefined}
               />
               {player && (
                 <circle
@@ -85,6 +116,14 @@ export default function Board({ pegs, onCellClick }: Props) {
                   r={CELL_SIZE / 3}
                   className={`peg peg-${player}`}
                   pointerEvents="none"
+                />
+              )}
+              {selectedKey === key && (
+                <circle
+                  cx={intersectionX(col)}
+                  cy={intersectionY(row)}
+                  r={CELL_SIZE / 3 + 3}
+                  className="peg-selected"
                 />
               )}
             </g>

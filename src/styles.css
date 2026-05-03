@@ -117,3 +117,14 @@ body {
 .stats-blue .stats-label { color: #2c5fb8; }
 .stats-value { font-variant-numeric: tabular-nums; }
 .stats-preview { color: #888; font-style: italic; }
+
+.peg-selected {
+  fill: none;
+  stroke: #f5d14a;
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+.hull-preview { fill-opacity: 0.28; stroke-width: 2; stroke-dasharray: 4 3; pointer-events: none; }
+.hull-preview-valid.hull-preview-red { fill: #c0392b; stroke: #c0392b; }
+.hull-preview-valid.hull-preview-blue { fill: #2c5fb8; stroke: #2c5fb8; }
+.hull-preview-invalid { fill: #999; stroke: #c0392b; }
