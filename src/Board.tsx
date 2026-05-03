@@ -23,6 +23,8 @@ type Props = {
   selectedKey?: CoordKey | null
   previewHull?: PreviewHull
   onCellHover?: (coord: Coord | null) => void
+  validDestinations?: Coord[]
+  currentPlayer?: Player
 }
 
 const playerHullPoints = (pegs: Map<CoordKey, Player>, player: Player): Point[] => {
@@ -45,6 +47,8 @@ export default function Board({
   selectedKey,
   previewHull,
   onCellHover,
+  validDestinations,
+  currentPlayer,
 }: Props) {
   const indices = Array.from({ length: BOARD_SIZE }, (_, i) => i)
   const redHull = playerHullPoints(pegs, 'red')
@@ -93,6 +97,17 @@ export default function Board({
       {previewHull && previewHull.points.length >= 3 && (
         <polygon points={pointsAttr(previewHull.points)} className={previewClass} />
       )}
+
+      {validDestinations && currentPlayer &&
+        validDestinations.map(({ row, col }) => (
+          <circle
+            key={`valid-${row}-${col}`}
+            cx={intersectionX(col)}
+            cy={intersectionY(row)}
+            r={CELL_SIZE / 6}
+            className={`valid-marker valid-marker-${currentPlayer}`}
+          />
+        ))}
 
       {indices.map((row) =>
         indices.map((col) => {

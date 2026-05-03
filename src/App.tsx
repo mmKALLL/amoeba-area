@@ -3,6 +3,7 @@ import Board from './Board'
 import Stats from './Stats'
 import { convexHull, polygonArea, polygonPerimeter, type Point } from './geometry'
 import {
+  BOARD_SIZE,
   buildInitialPegs,
   coordKey,
   intersectionX,
@@ -38,6 +39,17 @@ const computeStats = (pegs: Map<CoordKey, Player>, player: Player) => {
   return { area: polygonArea(hull), perimeter: polygonPerimeter(hull) }
 }
 
+const isValidDestination = (
+  pegs: Map<CoordKey, Player>,
+  player: Player,
+  fromKey: CoordKey,
+  to: Coord,
+  currentArea: number,
+): boolean => {
+  const hull = convexHull(playerGridPoints(pegs, player, fromKey, to))
+  return Math.abs(polygonArea(hull) - currentArea) < EPSILON
+}
+
 export default function App() {
   const [pegs, setPegs] = useState<Map<CoordKey, Player>>(() => buildInitialPegs())
   const [currentPlayer, setCurrentPlayer] = useState<Player>('red')
@@ -62,11 +74,7 @@ export default function App() {
 
     if (!selectedKey) return
 
-    const candidate = convexHull(
-      playerGridPoints(pegs, currentPlayer, selectedKey, coord),
-    )
-    const candidateArea = polygonArea(candidate)
-    if (Math.abs(candidateArea - currentArea) >= EPSILON) return
+    if (!isValidDestination(pegs, currentPlayer, selectedKey, coord, currentArea)) return
 
     const next = new Map(pegs)
     next.delete(selectedKey)
@@ -98,6 +106,20 @@ export default function App() {
     setCurrentPlayer('red')
     setSelectedKey(null)
     setHoverCoord(null)
+  }
+
+  const validDestinations: Coord[] = []
+  if (selectedKey) {
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const key = coordKey({ row, col })
+        if (pegs.has(key)) continue
+        const coord = { row, col }
+        if (isValidDestination(pegs, currentPlayer, selectedKey, coord, currentArea)) {
+          validDestinations.push(coord)
+        }
+      }
+    }
   }
 
   let preview: { player: Player; area: number; perimeter: number } | null = null
@@ -137,6 +159,8 @@ export default function App() {
         selectedKey={selectedKey}
         previewHull={previewHull}
         onCellHover={handleCellHover}
+        validDestinations={validDestinations}
+        currentPlayer={currentPlayer}
       />
     </main>
   )

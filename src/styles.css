@@ -128,3 +128,7 @@ body {
 .hull-preview-valid.hull-preview-red { fill: #c0392b; stroke: #c0392b; }
 .hull-preview-valid.hull-preview-blue { fill: #2c5fb8; stroke: #2c5fb8; }
 .hull-preview-invalid { fill: #999; stroke: #c0392b; }
+
+.valid-marker { pointer-events: none; }
+.valid-marker-red  { fill: #c0392b; fill-opacity: 0.85; }
+.valid-marker-blue { fill: #2c5fb8; fill-opacity: 0.85; }
