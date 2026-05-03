@@ -16,18 +16,18 @@ export const intersectionX = (col: number): number => PADDING + col * CELL_SIZE
 export const intersectionY = (row: number): number => PADDING + row * CELL_SIZE
 
 export const INITIAL_LAYOUT: ReadonlyArray<{ row: number; col: number; player: Player }> = [
-  { row: 5, col: 4, player: 'red' },
+  { row: 5, col: 7, player: 'red' },
   { row: 5, col: 12, player: 'red' },
-  { row: 5, col: 20, player: 'red' },
-  { row: 10, col: 4, player: 'red' },
+  { row: 5, col: 17, player: 'red' },
+  { row: 10, col: 7, player: 'red' },
   { row: 10, col: 12, player: 'red' },
-  { row: 10, col: 20, player: 'red' },
-  { row: 13, col: 4, player: 'blue' },
+  { row: 10, col: 17, player: 'red' },
+  { row: 13, col: 7, player: 'blue' },
   { row: 13, col: 12, player: 'blue' },
-  { row: 13, col: 20, player: 'blue' },
-  { row: 18, col: 4, player: 'blue' },
+  { row: 13, col: 17, player: 'blue' },
+  { row: 18, col: 7, player: 'blue' },
   { row: 18, col: 12, player: 'blue' },
-  { row: 18, col: 20, player: 'blue' },
+  { row: 18, col: 17, player: 'blue' },
 ]
 
 export const buildInitialPegs = (): Map<CoordKey, Player> => {
