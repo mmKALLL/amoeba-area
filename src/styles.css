@@ -100,3 +100,20 @@ body {
   stroke: #16386b;
   stroke-width: 1;
 }
+
+.stats {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stats-row { display: flex; gap: 16px; align-items: baseline; }
+.stats-label { width: 48px; font-weight: 600; text-transform: capitalize; }
+.stats-red .stats-label { color: #c0392b; }
+.stats-blue .stats-label { color: #2c5fb8; }
+.stats-value { font-variant-numeric: tabular-nums; }
+.stats-preview { color: #888; font-style: italic; }
