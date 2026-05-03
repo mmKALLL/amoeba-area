@@ -1,3 +1,4 @@
+import { convexHull, type Point } from './geometry'
 import { BOARD_SIZE, coordKey, type Coord, type CoordKey, type Player } from './types'
 
 const CELL_SIZE = 24
@@ -12,10 +13,24 @@ type Props = {
 const intersectionX = (col: number) => PADDING + col * CELL_SIZE
 const intersectionY = (row: number) => PADDING + row * CELL_SIZE
 
+const playerHullPoints = (pegs: Map<CoordKey, Player>, player: Player): Point[] => {
+  const points: Point[] = []
+  for (const [key, owner] of pegs) {
+    if (owner !== player) continue
+    const [rowStr, colStr] = key.split(',')
+    const row = Number(rowStr)
+    const col = Number(colStr)
+    points.push({ x: intersectionX(col), y: intersectionY(row) })
+  }
+  return convexHull(points)
+}
+
+const pointsAttr = (hull: Point[]): string => hull.map((p) => `${p.x},${p.y}`).join(' ')
+
 export default function Board({ pegs, onCellClick }: Props) {
   const indices = Array.from({ length: BOARD_SIZE }, (_, i) => i)
-  const bandThickness = CELL_SIZE
-  const innerLength = (BOARD_SIZE - 1) * CELL_SIZE + bandThickness
+  const redHull = playerHullPoints(pegs, 'red')
+  const blueHull = playerHullPoints(pegs, 'blue')
 
   return (
     <svg
@@ -25,34 +40,10 @@ export default function Board({ pegs, onCellClick }: Props) {
       role="img"
       aria-label="Amoeba Area board"
     >
-      <rect
-        x={PADDING - bandThickness / 2}
-        y={PADDING - bandThickness / 2}
-        width={innerLength}
-        height={bandThickness}
-        className="border-band border-red"
-      />
-      <rect
-        x={PADDING - bandThickness / 2}
-        y={PADDING + (BOARD_SIZE - 1) * CELL_SIZE - bandThickness / 2}
-        width={innerLength}
-        height={bandThickness}
-        className="border-band border-red"
-      />
-      <rect
-        x={PADDING - bandThickness / 2}
-        y={PADDING - bandThickness / 2}
-        width={bandThickness}
-        height={innerLength}
-        className="border-band border-blue"
-      />
-      <rect
-        x={PADDING + (BOARD_SIZE - 1) * CELL_SIZE - bandThickness / 2}
-        y={PADDING - bandThickness / 2}
-        width={bandThickness}
-        height={innerLength}
-        className="border-band border-blue"
-      />
+      {redHull.length >= 3 && <polygon points={pointsAttr(redHull)} className="hull hull-red" />}
+      {blueHull.length >= 3 && (
+        <polygon points={pointsAttr(blueHull)} className="hull hull-blue" />
+      )}
 
       {indices.map((row) => (
         <line

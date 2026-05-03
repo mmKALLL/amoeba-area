@@ -1,24 +1,15 @@
 import { useState } from 'react'
 import Board from './Board'
-import { coordKey, type Coord, type CoordKey, type Player } from './types'
-
-const otherPlayer = (p: Player): Player => (p === 'red' ? 'blue' : 'red')
+import { buildInitialPegs, type CoordKey, type Player } from './types'
 
 export default function App() {
-  const [pegs, setPegs] = useState<Map<CoordKey, Player>>(() => new Map())
+  const [pegs, setPegs] = useState<Map<CoordKey, Player>>(() => buildInitialPegs())
   const [currentPlayer, setCurrentPlayer] = useState<Player>('red')
 
-  const handleCellClick = (coord: Coord) => {
-    const key = coordKey(coord)
-    if (pegs.has(key)) return
-    const next = new Map(pegs)
-    next.set(key, currentPlayer)
-    setPegs(next)
-    setCurrentPlayer(otherPlayer(currentPlayer))
-  }
+  const handleCellClick = () => undefined
 
   const reset = () => {
-    setPegs(new Map())
+    setPegs(buildInitialPegs())
     setCurrentPlayer('red')
   }
 

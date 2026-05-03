@@ -76,18 +76,9 @@ body {
   stroke-width: 1;
 }
 
-.border-band {
-  fill-opacity: 0.18;
-  stroke: none;
-}
-
-.border-red {
-  fill: #c0392b;
-}
-
-.border-blue {
-  fill: #2c5fb8;
-}
+.hull { fill-opacity: 0.18; stroke-opacity: 0.6; stroke-width: 1.5; pointer-events: none; }
+.hull-red  { fill: #c0392b; stroke: #c0392b; }
+.hull-blue { fill: #2c5fb8; stroke: #2c5fb8; }
 
 .hit {
   fill: transparent;
