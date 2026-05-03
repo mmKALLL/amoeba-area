@@ -43,6 +43,44 @@ export function convexHull(points: Point[]): Point[] {
   return lower.concat(upper)
 }
 
+export function pointInConvexHull(point: Point, hull: Point[]): boolean {
+  const EPS = 1e-9
+  if (hull.length === 0) return false
+  if (hull.length === 1) {
+    const dx = point.x - hull[0].x
+    const dy = point.y - hull[0].y
+    return Math.abs(dx) <= EPS && Math.abs(dy) <= EPS
+  }
+  if (hull.length === 2) {
+    const a = hull[0]
+    const b = hull[1]
+    const cr = (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x)
+    if (Math.abs(cr) > EPS) return false
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    const lenSq = dx * dx + dy * dy
+    if (lenSq <= EPS) {
+      const ex = point.x - a.x
+      const ey = point.y - a.y
+      return Math.abs(ex) <= EPS && Math.abs(ey) <= EPS
+    }
+    const t = ((point.x - a.x) * dx + (point.y - a.y) * dy) / lenSq
+    return t >= -EPS && t <= 1 + EPS
+  }
+  let hasPos = false
+  let hasNeg = false
+  const n = hull.length
+  for (let i = 0; i < n; i++) {
+    const a = hull[i]
+    const b = hull[(i + 1) % n]
+    const cr = (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x)
+    if (cr > EPS) hasPos = true
+    else if (cr < -EPS) hasNeg = true
+    if (hasPos && hasNeg) return false
+  }
+  return true
+}
+
 export function polygonArea(polygon: Point[]): number {
   if (polygon.length < 3) return 0
   let sum = 0
